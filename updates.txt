@@ -1,0 +1,13 @@
+so now the app should:
+1. In the Login page add not signed up? register now button to take to register page, similarly for register page as well redirect to login page
+2. Implement following authentications:
+ 2.1 if username and/or password not entered and clicked on login, show enter username & password
+ 2.2 if username does not exist render user does not exist
+ 2.3 if username exists but password incorrect render invalid credentials
+ 2.4 if correct username and password direct to tasks page
+ 2.5 while registering if username exists render user already exists
+3. Add confirm password field for registering user, register user if both the passwords matches
+4. in tasks page create task table, if no existing tasks render no tasks available, else render tasks row by row
+5. add modals for create, update, delete tasks
+6. Add standard styles for the pages
+7. once logged in and on tasks page then user can only logout and cannot navigate to register or login page
