@@ -1,39 +1,12 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
+import prisma from "../config/db";
 import { Request, Response } from "express";
 import dotenv from "dotenv";
-import prisma from "../config/db";
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "default_secret";
-
-// Register User
-export const registerUser = async (req: Request, res: Response): Promise<any> => {
-  try {
-    const { username, password } = req.body;
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({ where: { username } });
-    if (existingUser) return res.status(400).json({ error: "User already exists" });
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const newUser = await prisma.user.create({
-      data: {
-        username,
-        password: hashedPassword,
-      },
-    });
-
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (error) {
-    res.status(500).json({ error: "Registration failed" });
-  }
-};
 
 // Login User
 export const loginUser = async (req: Request, res: Response): Promise<any> => {
@@ -42,13 +15,13 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
 
     // Check if user exists
     const user = await prisma.user.findUnique({ where: { username } });
-    if (!user) return res.status(400).json({ error: "Invalid credentials" });
+    if (!user) return res.status(400).json({ error: "Not a user, register now!" });
 
     // Compare passwords
     const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) return res.status(400).json({ error: "Invalid credentials" });
+    if (!isValidPassword) return res.status(400).json({ error: "Invalid credentials!" });
 
-    // Generate JWT
+    // Generate JWT Token
     const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, {
       expiresIn: "1h",
     });
@@ -56,5 +29,35 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     res.json({ token });
   } catch (error) {
     res.status(500).json({ error: "Login failed" });
+  }
+};
+
+export const registerUser = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { username, password, confirmPassword } = req.body;
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: "Passwords do not match!" });
+    }
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({ where: { username } });
+    if (existingUser) return res.status(400).json({ error: "Already a user, please login!" });
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    await prisma.user.create({
+      data: {
+        username,
+        password: hashedPassword,
+      },
+    });
+
+    res.status(201).json({ message: "User registered successfully, please login!" });
+  } catch (error) {
+    res.status(500).json({ error: "Registration failed" });
   }
 };

@@ -17,11 +17,6 @@ const Tasks: React.FC = () => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
   useEffect(() => {
     if (!token) navigate("/login");
 
@@ -46,7 +41,7 @@ const Tasks: React.FC = () => {
         { title, description },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setTasks([...tasks, response.data]);
+      setTasks([...tasks, response.data]); // Push new task to bottom
       setTitle("");
       setDescription("");
     } catch (error) {
@@ -55,6 +50,9 @@ const Tasks: React.FC = () => {
   };
 
   const deleteTask = async (taskNumber: number) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this task?");
+    if (!confirmDelete) return;
+  
     try {
       await axios.delete(`http://localhost:5000/tasks/${taskNumber}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -64,7 +62,7 @@ const Tasks: React.FC = () => {
       console.error("Error deleting task", error);
     }
   };
-
+  
   const updateTask = async () => {
     if (!editingTask) return;
 
@@ -86,25 +84,26 @@ const Tasks: React.FC = () => {
     }
   };
 
-  const markComplete = async (taskNumber: number) => {
+  const toggleComplete = async (taskNumber: number, isComplete: boolean) => {
     try {
       await axios.put(
         `http://localhost:5000/tasks/${taskNumber}`,
-        { isComplete: true },
+        { isComplete },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setTasks(tasks.map((task) =>
-        task.taskNumber === taskNumber ? { ...task, isComplete: true } : task
+        task.taskNumber === taskNumber ? { ...task, isComplete } : task
       ));
     } catch (error) {
-      console.error("Error marking task complete", error);
+      console.error("Error updating task", error);
     }
   };
 
   return (
     <div>
       <h2>Tasks</h2>
+
       {/* Task Creation Form */}
       <form
         onSubmit={(e) => {
@@ -112,42 +111,72 @@ const Tasks: React.FC = () => {
           createTask();
         }}
       >
-        <button onClick={logout}>Logout</button>
         <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
         <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
         <button type="submit">Add Task</button>
       </form>
 
-      {/* Task List */}
-      <ul>
-        {tasks.map((task) => (
-          <li key={task.taskNumber}>
-            {editingTask && editingTask.taskNumber === task.taskNumber ? (
-              <div>
+      {/* Task Table */}
+      <table border={1} style={{ width: "100%", marginTop: "20px" }}>
+        <thead>
+          <tr>
+            <th>Task ID</th>
+            <th>Task Title</th>
+            <th>Description</th>
+            <th>Completed</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tasks.map((task) => (
+            <tr key={task.taskNumber}>
+              <td>{task.taskNumber}</td>
+              <td>
+                {editingTask && editingTask.taskNumber === task.taskNumber ? (
+                  <input
+                    type="text"
+                    value={editingTask.title}
+                    onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                  />
+                ) : (
+                  task.title
+                )}
+              </td>
+              <td>
+                {editingTask && editingTask.taskNumber === task.taskNumber ? (
+                  <input
+                    type="text"
+                    value={editingTask.description || ""}
+                    onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
+                  />
+                ) : (
+                  task.description || "N/A"
+                )}
+              </td>
+              <td>
                 <input
-                  type="text"
-                  value={editingTask.title}
-                  onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                  type="checkbox"
+                  checked={task.isComplete}
+                  onChange={(e) => toggleComplete(task.taskNumber, e.target.checked)}
                 />
-                <input
-                  type="text"
-                  value={editingTask.description || ""}
-                  onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
-                />
-                <button onClick={updateTask}>Save</button>
-                <button onClick={() => setEditingTask(null)}>Cancel</button>
-              </div>
-            ) : (
-              <div>
-                <span>{task.title} - {task.isComplete ? "✅ Completed" : "❌ Not Completed"}</span>
-                <button onClick={() => deleteTask(task.taskNumber)}>Delete</button>
-                <button onClick={() => setEditingTask(task)}>Edit</button>
-                {!task.isComplete && <button onClick={() => markComplete(task.taskNumber)}>Mark Complete</button>}
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+              </td>
+              <td>
+                {editingTask && editingTask.taskNumber === task.taskNumber ? (
+                  <>
+                    <button onClick={updateTask}>Save</button>
+                    <button onClick={() => setEditingTask(null)}>Cancel</button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => setEditingTask(task)}>Edit</button>
+                    <button onClick={() => deleteTask(task.taskNumber)}>Delete</button>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
