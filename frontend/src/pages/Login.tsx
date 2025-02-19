@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const Login: React.FC = () => {
+interface LoginProps {
+  setAuth: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Login: React.FC<LoginProps> = ({ setAuth }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -10,12 +14,15 @@ const Login: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
     try {
       const response = await axios.post("http://localhost:5000/auth/login", { username, password });
       localStorage.setItem("token", response.data.token);
+      setAuth(true); // ✅ Updates authentication state
       navigate("/");
     } catch (err: any) {
-      setError(err.response.data.error);
+      setError(err.response?.data?.error || "Login failed");
     }
   };
 

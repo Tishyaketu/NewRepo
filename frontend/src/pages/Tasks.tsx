@@ -7,9 +7,14 @@ interface Task {
   title: string;
   description?: string;
   isComplete: boolean;
+  userId: number
 }
 
-const Tasks: React.FC = () => {
+interface TasksProps {
+  setAuth: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Tasks: React.FC<TasksProps> = ({ setAuth }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -41,7 +46,7 @@ const Tasks: React.FC = () => {
         { title, description },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setTasks([...tasks, response.data]); // Push new task to bottom
+      setTasks([...tasks, response.data]); // Push new task to the bottom
       setTitle("");
       setDescription("");
     } catch (error) {
@@ -49,10 +54,16 @@ const Tasks: React.FC = () => {
     }
   };
 
+  const logout = () => {
+    localStorage.removeItem("token");
+    setAuth(false);
+    navigate("/login");
+  };
+
   const deleteTask = async (taskNumber: number) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this task?");
     if (!confirmDelete) return;
-  
+
     try {
       await axios.delete(`http://localhost:5000/tasks/${taskNumber}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -62,7 +73,7 @@ const Tasks: React.FC = () => {
       console.error("Error deleting task", error);
     }
   };
-  
+
   const updateTask = async () => {
     if (!editingTask) return;
 
@@ -84,24 +95,26 @@ const Tasks: React.FC = () => {
     }
   };
 
-  const toggleComplete = async (taskNumber: number, isComplete: boolean) => {
+  const toggleComplete = async (taskNumber: number, isChecked: boolean) => {
     try {
       await axios.put(
         `http://localhost:5000/tasks/${taskNumber}`,
-        { isComplete },
+        { isComplete: isChecked },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setTasks(tasks.map((task) =>
-        task.taskNumber === taskNumber ? { ...task, isComplete } : task
+        task.taskNumber === taskNumber ? { ...task, isComplete: isChecked } : task
       ));
     } catch (error) {
-      console.error("Error updating task", error);
+      console.error("Error updating completion status", error);
     }
   };
 
   return (
     <div>
+      <h2>Tasks</h2>
+      <button onClick={logout} style={{ float: "right", marginBottom: "10px" }}>Logout</button>
       <h2>Tasks</h2>
 
       {/* Task Creation Form */}
@@ -115,9 +128,7 @@ const Tasks: React.FC = () => {
         <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
         <button type="submit">Add Task</button>
       </form>
-
-      {/* Task Table */}
-      <table border={1} style={{ width: "100%", marginTop: "20px" }}>
+      <table border={1} cellPadding="10">
         <thead>
           <tr>
             <th>Task ID</th>
@@ -125,6 +136,7 @@ const Tasks: React.FC = () => {
             <th>Description</th>
             <th>Completed</th>
             <th>Actions</th>
+            <th>User ID</th>
           </tr>
         </thead>
         <tbody>
@@ -150,7 +162,7 @@ const Tasks: React.FC = () => {
                     onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
                   />
                 ) : (
-                  task.description || "N/A"
+                  task.description || "-"
                 )}
               </td>
               <td>
@@ -173,6 +185,7 @@ const Tasks: React.FC = () => {
                   </>
                 )}
               </td>
+              <td>{task.userId}</td>
             </tr>
           ))}
         </tbody>
