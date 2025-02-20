@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import "./Tasks.css"; // ✅ Import styles
 
 interface Task {
   taskNumber: number;
   title: string;
   description?: string;
   isComplete: boolean;
-  userId: number
+  userId: number;
 }
 
 interface TasksProps {
@@ -19,6 +20,7 @@ const Tasks: React.FC<TasksProps> = ({ setAuth }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
@@ -39,25 +41,32 @@ const Tasks: React.FC<TasksProps> = ({ setAuth }) => {
     fetchTasks();
   }, [token, navigate]);
 
+  const logout = () => {
+    localStorage.removeItem("token");
+    setAuth(false);
+    navigate("/login");
+  };
+
   const createTask = async () => {
+    if (!title.trim()) {
+      alert("Task title cannot be empty.");
+      return;
+    }
+
     try {
       const response = await axios.post(
         "http://localhost:5000/tasks",
         { title, description },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setTasks([...tasks, response.data]); // Push new task to the bottom
+
+      setTasks([...tasks, response.data]);
+      setIsModalOpen(false);
       setTitle("");
       setDescription("");
     } catch (error) {
       console.error("Error creating task", error);
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    setAuth(false);
-    navigate("/login");
   };
 
   const deleteTask = async (taskNumber: number) => {
@@ -107,28 +116,34 @@ const Tasks: React.FC<TasksProps> = ({ setAuth }) => {
         task.taskNumber === taskNumber ? { ...task, isComplete: isChecked } : task
       ));
     } catch (error) {
-      console.error("Error updating completion status", error);
+      console.error("Error marking task complete", error);
     }
   };
 
   return (
-    <div>
-      <h2>Tasks</h2>
-      <button onClick={logout} style={{ float: "right", marginBottom: "10px" }}>Logout</button>
+    <div className="tasks-container">
+      <button className="logout-button" onClick={logout}>Logout</button>
       <h2>Tasks</h2>
 
-      {/* Task Creation Form */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          createTask();
-        }}
-      >
-        <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-        <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-        <button type="submit">Add Task</button>
-      </form>
-      <table border={1} cellPadding="10">
+      {/* Add Task Button */}
+      <button className="add-task-button" onClick={() => setIsModalOpen(true)}>Add Task</button>
+
+      {/* Task Creation Modal */}
+      {isModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Create a New Task</h3>
+            <input type="text" placeholder="Task Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+            <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <div className="modal-buttons">
+              <button className="save-button" onClick={createTask}>Save</button>
+              <button className="cancel-button" onClick={() => setIsModalOpen(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <table className="task-table">
         <thead>
           <tr>
             <th>Task ID</th>
@@ -172,16 +187,16 @@ const Tasks: React.FC<TasksProps> = ({ setAuth }) => {
                   onChange={(e) => toggleComplete(task.taskNumber, e.target.checked)}
                 />
               </td>
-              <td>
+              <td className="task-actions">
                 {editingTask && editingTask.taskNumber === task.taskNumber ? (
                   <>
-                    <button onClick={updateTask}>Save</button>
-                    <button onClick={() => setEditingTask(null)}>Cancel</button>
+                    <button className="save-button" onClick={updateTask}>Save</button>
+                    <button className="cancel-button" onClick={() => setEditingTask(null)}>Cancel</button>
                   </>
                 ) : (
                   <>
-                    <button onClick={() => setEditingTask(task)}>Edit</button>
-                    <button onClick={() => deleteTask(task.taskNumber)}>Delete</button>
+                    <button className="edit-button" onClick={() => setEditingTask(task)}>Edit</button>
+                    <button className="delete-button" onClick={() => deleteTask(task.taskNumber)}>Delete</button>
                   </>
                 )}
               </td>
