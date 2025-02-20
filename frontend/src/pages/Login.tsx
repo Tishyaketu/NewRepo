@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "./Auth.css";
 
 interface LoginProps {
   setAuth: React.Dispatch<React.SetStateAction<boolean>>;
@@ -27,15 +28,15 @@ const Login: React.FC<LoginProps> = ({ setAuth }) => {
   };
 
   return (
-    <div>
+    <div className="auth-container">
       <h2>Login</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleLogin}>
+      {error && <p className="auth-error">{error}</p>}
+      <form className="auth-form" onSubmit={handleLogin}>
         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <button type="submit">Login</button>
+        <button className="auth-button" type="submit">Login</button>
       </form>
-      <p>Not registered? <button onClick={() => navigate("/register")}>Register Now</button></p>
+      <p className="auth-link">Not registered? <button onClick={() => navigate("/register")}>Register Now</button></p>
     </div>
   );
 };
