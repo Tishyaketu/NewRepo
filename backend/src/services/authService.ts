@@ -15,7 +15,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
 
     // Check if user exists
     const user = await prisma.user.findUnique({ where: { username } });
-    if (!user) return res.status(400).json({ error: "Not a user, register now!" });
+    if (!user) return res.status(400).json({ error: "Not a user, please register now!" });
 
     // Compare passwords
     const isValidPassword = await bcrypt.compare(password, user.password);

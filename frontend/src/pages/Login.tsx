@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Auth.css";
+import Header from "../components/Header";
 
 interface LoginProps {
   setAuth: React.Dispatch<React.SetStateAction<boolean>>;
@@ -28,17 +29,19 @@ const Login: React.FC<LoginProps> = ({ setAuth }) => {
   };
 
   return (
-    <div className="auth-container">
-      <h2>Login</h2>
-      {error && <p className="auth-error">{error}</p>}
-      <form className="auth-form" onSubmit={handleLogin}>
-        <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <button className="auth-button" type="submit">Login</button>
-      </form>
-      <p className="auth-link">Not registered? <button onClick={() => navigate("/register")}>Register Now</button></p>
-    </div>
-  );
+    <>
+      <Header /> 
+      <div className="auth-container">
+        <h2>Login</h2>
+        {error && <p className="auth-error">{error}</p>}
+        <form className="auth-form" onSubmit={handleLogin}>
+          <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <button className="auth-button" type="submit">Login</button>
+        </form>
+        <p className="auth-link">Not registered? <button onClick={() => navigate("/register")}>Register Now</button></p>
+      </div>
+    </>);
 };
 
 export default Login;

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Auth.css";
+import Header from "../components/Header";
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -29,17 +30,20 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="auth-container">
-      <h2>Register</h2>
-      {error && <p className="auth-error">{error}</p>}
-      <form  className="auth-form" onSubmit={handleRegister}>
-        <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-        <button className="auth-button" type="submit">Register</button>
-      </form>
-      <p className="auth-link">Already a user? <button onClick={() => navigate("/login")}>Login Now</button></p>
-    </div>
+    <>
+    <Header />
+      <div className="auth-container">
+        <h2>Register</h2>
+        {error && <p className="auth-error">{error}</p>}
+        <form  className="auth-form" onSubmit={handleRegister}>
+          <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+          <button className="auth-button" type="submit">Register</button>
+        </form>
+        <p className="auth-link">Already a user? <button onClick={() => navigate("/login")}>Login Now</button></p>
+      </div>
+    </>
   );
 };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Tasks.css"; // ✅ Import styles
+import Header from "../components/Header";
 
 interface Task {
   taskNumber: number;
@@ -121,91 +122,94 @@ const Tasks: React.FC<TasksProps> = ({ setAuth }) => {
   };
 
   return (
-    <div className="tasks-container">
-      <button className="logout-button" onClick={logout}>Logout</button>
-      <h2>Tasks</h2>
+    <>
+      <Header />
+      <div className="tasks-container">
+        <button className="logout-button" onClick={logout}>Logout</button>
+        <h2>Tasks</h2>
 
-      {/* Add Task Button */}
-      <button className="add-task-button" onClick={() => setIsModalOpen(true)}>Add Task</button>
+        {/* Add Task Button */}
+        <button className="add-task-button" onClick={() => setIsModalOpen(true)}>Add Task</button>
 
-      {/* Task Creation Modal */}
-      {isModalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Create a New Task</h3>
-            <input type="text" placeholder="Task Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-            <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-            <div className="modal-buttons">
-              <button className="save-button" onClick={createTask}>Save</button>
-              <button className="cancel-button" onClick={() => setIsModalOpen(false)}>Cancel</button>
+        {/* Task Creation Modal */}
+        {isModalOpen && (
+          <div className="modal">
+            <div className="modal-content">
+              <h3>Create a New Task</h3>
+              <input type="text" placeholder="Task Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+              <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
+              <div className="modal-buttons">
+                <button className="save-button" onClick={createTask}>Save</button>
+                <button className="cancel-button" onClick={() => setIsModalOpen(false)}>Cancel</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <table className="task-table">
-        <thead>
-          <tr>
-            <th>Task ID</th>
-            <th>Task Title</th>
-            <th>Description</th>
-            <th>Completed</th>
-            <th>Actions</th>
-            <th>User ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tasks.map((task) => (
-            <tr key={task.taskNumber}>
-              <td>{task.taskNumber}</td>
-              <td>
-                {editingTask && editingTask.taskNumber === task.taskNumber ? (
-                  <input
-                    type="text"
-                    value={editingTask.title}
-                    onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
-                  />
-                ) : (
-                  task.title
-                )}
-              </td>
-              <td>
-                {editingTask && editingTask.taskNumber === task.taskNumber ? (
-                  <input
-                    type="text"
-                    value={editingTask.description || ""}
-                    onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
-                  />
-                ) : (
-                  task.description || "-"
-                )}
-              </td>
-              <td>
-                <input
-                  type="checkbox"
-                  checked={task.isComplete}
-                  onChange={(e) => toggleComplete(task.taskNumber, e.target.checked)}
-                />
-              </td>
-              <td className="task-actions">
-                {editingTask && editingTask.taskNumber === task.taskNumber ? (
-                  <>
-                    <button className="save-button" onClick={updateTask}>Save</button>
-                    <button className="cancel-button" onClick={() => setEditingTask(null)}>Cancel</button>
-                  </>
-                ) : (
-                  <>
-                    <button className="edit-button" onClick={() => setEditingTask(task)}>Edit</button>
-                    <button className="delete-button" onClick={() => deleteTask(task.taskNumber)}>Delete</button>
-                  </>
-                )}
-              </td>
-              <td>{task.userId}</td>
+        <table className="task-table">
+          <thead>
+            <tr>
+              <th>Task ID</th>
+              <th>Task Title</th>
+              <th>Description</th>
+              <th>Completed</th>
+              <th>Actions</th>
+              <th>User ID</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {tasks.map((task) => (
+              <tr key={task.taskNumber}>
+                <td>{task.taskNumber}</td>
+                <td>
+                  {editingTask && editingTask.taskNumber === task.taskNumber ? (
+                    <input
+                      type="text"
+                      value={editingTask.title}
+                      onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                    />
+                  ) : (
+                    task.title
+                  )}
+                </td>
+                <td>
+                  {editingTask && editingTask.taskNumber === task.taskNumber ? (
+                    <input
+                      type="text"
+                      value={editingTask.description || ""}
+                      onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
+                    />
+                  ) : (
+                    task.description || "-"
+                  )}
+                </td>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={task.isComplete}
+                    onChange={(e) => toggleComplete(task.taskNumber, e.target.checked)}
+                  />
+                </td>
+                <td className="task-actions">
+                  {editingTask && editingTask.taskNumber === task.taskNumber ? (
+                    <>
+                      <button className="save-button" onClick={updateTask}>Save</button>
+                      <button className="cancel-button" onClick={() => setEditingTask(null)}>Cancel</button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="edit-button" onClick={() => setEditingTask(task)}>Edit</button>
+                      <button className="delete-button" onClick={() => deleteTask(task.taskNumber)}>Delete</button>
+                    </>
+                  )}
+                </td>
+                <td>{task.userId}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 };
 
